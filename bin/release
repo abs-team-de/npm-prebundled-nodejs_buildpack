@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# ================================================================
+# npm-prebundled-nodejs_buildpack — release
+#
+# Provides default process types to Cloud Foundry.
+# The "command" in mta.yaml takes precedence over this.
+# ================================================================
+
+BUILD_DIR="$1"
+
+BUILDPACK_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+source "${BUILDPACK_DIR}/lib/utils.sh"
+
+# Try to extract the start script from package.json
+START_CMD=""
+if [ -f "${BUILD_DIR}/package.json" ]; then
+  START_CMD=$(read_package_field "${BUILD_DIR}/package.json" "scripts.start")
+fi
+
+if [ -n "$START_CMD" ]; then
+  DEFAULT_WEB="$START_CMD"
+elif [ -f "${BUILD_DIR}/server.js" ]; then
+  DEFAULT_WEB="node server.js"
+elif [ -f "${BUILD_DIR}/index.js" ]; then
+  DEFAULT_WEB="node index.js"
+else
+  DEFAULT_WEB="node server.js"
+fi
+
+# -a escapes non-ASCII as \uXXXX, which YAML double-quoted scalars accept
+ESCAPED_WEB=$(jq -an --arg cmd "$DEFAULT_WEB" '$cmd')
+
+cat <<EOF
+---
+default_process_types:
+  web: ${ESCAPED_WEB}
+EOF

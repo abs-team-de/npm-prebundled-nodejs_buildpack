@@ -1,0 +1,6 @@
+# Force Unix line endings for all shell scripts
+# CF staging runs on Linux — Windows line endings break shebang lines
+bin/*  text eol=lf
+lib/*  text eol=lf
+*.sh   text eol=lf
+*.bats text eol=lf
