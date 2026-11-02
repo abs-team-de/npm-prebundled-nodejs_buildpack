@@ -31,7 +31,7 @@ modules:
         - npm ci --omit=dev
     parameters:
       buildpacks:
-        - https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack.git#v1.0.0
+        - https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack.git#v1.0.1
       memory: 512M
       disk_quota: 1024M
 ```
