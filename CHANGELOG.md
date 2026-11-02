@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- `engines.node` ranges such as `22`, `22.x` or `^22.10.0` failed staging with "No Node.js release on nodejs.org matches" once nodejs.org listed a prerelease (`v27.0.0-alpha.0.0.0`, 2026-10-29). Prereleases are now skipped, and an index that cannot be parsed fails with "Could not parse" instead of a misleading no-match error
+
 ## [1.0.0](https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack/releases/tag/v1.0.0) - 2026-10-22
 
 ### Added

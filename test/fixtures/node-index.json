@@ -1,5 +1,16 @@
 [
   {
+    "version": "v27.0.0-alpha.0.0.0",
+    "date": "2026-10-29",
+    "files": [
+      "linux-arm64",
+      "linux-x64",
+      "osx-arm64-tar"
+    ],
+    "lts": false,
+    "security": false
+  },
+  {
     "version": "v24.99.0",
     "date": "2026-10-22",
     "files": [
@@ -50,6 +61,17 @@
       "osx-arm64-tar"
     ],
     "lts": false,
+    "security": false
+  },
+  {
+    "version": "v22.24.0-rc.1",
+    "date": "2026-10-28",
+    "files": [
+      "linux-arm64",
+      "linux-x64",
+      "osx-arm64-tar"
+    ],
+    "lts": "Jod",
     "security": false
   },
   {

@@ -137,17 +137,26 @@ latest_node_version() {
   # "24.3" → [24,3,0]
   lower=$(echo "${version}.0.0" | cut -d. -f1-3 | jq -R 'split(".") | map(tonumber)')
 
-  resolved=$(echo "$index" | jq -r --arg op "$operator" --argjson low "$lower" --argjson parts "$parts" '
+  # Prereleases (v27.0.0-alpha.0.0.0) are skipped: they are not releases,
+  # and tonumber fails on their suffix. Malformed entries (no files array,
+  # non-string version) are skipped too; only an unparseable index is fatal.
+  if ! resolved=$(echo "$index" | jq -r --arg op "$operator" --argjson low "$lower" --argjson parts "$parts" '
     [ .[]
-      | select(any(.files[]; . == "linux-x64"))
-      | {v: (.version | ltrimstr("v") | split(".") | map(tonumber)), lts}
+      | try (
+          select(any(.files[]; . == "linux-x64"))
+          | select(.version | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))
+          | {v:(.version | ltrimstr("v") | split(".") | map(tonumber)), lts}
+        )
       | select(.v >= $low)
       | select(
           if   $op == ">=" then .lts != false
           elif $op == "^"  then .v[0] == $low[0]
           elif $op == "~" and $parts >= 2 then .v[0:2] == $low[0:2]
           else .v[0:$parts] == $low[0:$parts] end)
-    ] | (max_by(.v) // empty) | .v | map(tostring) | join(".")' 2>/dev/null || true)
+    ] | (max_by(.v) // empty) | .v | map(tostring) | join(".")'); then
+    log_error "Could not parse ${NODE_INDEX_URL} to resolve engines.node '${requested}'." >&2
+    return 1
+  fi
 
   if [ -z "$resolved" ]; then
     log_error "No Node.js release on nodejs.org matches engines.node '${requested}'." >&2
