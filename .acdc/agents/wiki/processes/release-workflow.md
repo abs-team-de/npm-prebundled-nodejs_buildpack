@@ -7,7 +7,10 @@ sources:
   - README.md
   - .github/workflows/ci.yml
   - "release of v1.0.0, matching the pnpm buildpack's convention"
-updated: 2026-10-22
+  - bin/finalize
+  - lib/utils.sh
+  - "release of v1.0.1 (staging in cflinuxfs5)"
+updated: 2026-11-02
 confidence: medium
 ---
 
@@ -23,6 +26,9 @@ SAP BTP consumes this buildpack by git URL plus tag (`...npm-prebundled-nodejs_b
 2. **Merge to master** through a PR with 1 approving review (master is protected). Commits follow `type(scope): description #<AzureDevOpsWorkItemId>`.
 3. **Stage end to end before tagging**, inside the `cloudfoundry/cflinuxfs5` image: detect, supply, finalize, release, then start the app via `.profile.d`.
    - Use an app built with `npm ci --omit=dev`.
+     - It needs at least one dependency: finalize fails on an empty `node_modules` (`DEP_COUNT` check in `bin/finalize`).
+     - To avoid the registry, depend on a local `npm pack` tarball, e.g. `"greet": "file:./vendor/greet-1.0.0.tgz"`; `npm ci` unpacks it as a real directory. npm links a `file:` dependency on a plain folder; finalize rejects the link only if its target is missing or outside the app (e.g. a folder outside the packaged app directory). `--install-links` copies it instead.
+     - Staging runs as uid 2000. If the buildpack or app sits on a bind mount uid 2000 cannot read (e.g. a home directory), copy them into the container as root, `chown -R 2000:2000`, and run the phases with `setpriv --reuid=2000 --regid=2000 --clear-groups`.
    - Check that `engines.node` `^24.0.0`, `22` and empty resolve to the expected versions, and that `>=18 <21` fails before any download.
    - Wait for CI to pass on all three jobs (ubuntu-latest, cflinuxfs4, cflinuxfs5), see `.github/workflows/ci.yml`.
 4. **Tag and publish.**
