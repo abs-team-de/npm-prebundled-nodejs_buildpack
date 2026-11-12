@@ -31,7 +31,7 @@ modules:
         - npm ci --omit=dev
     parameters:
       buildpacks:
-        - https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack.git#v1.0.1
+        - https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack.git#v1.0.2
       memory: 512M
       disk_quota: 1024M
 ```
@@ -64,7 +64,7 @@ Finalize therefore fails staging on any symlink in `node_modules` that is dangli
 
 | Source | Field | Example | Purpose |
 |--------|-------|---------|---------|
-| `package.json` | `engines.node` | `"^24.22.1"` | Node.js version to install (default `24.22.1`) |
+| `package.json` | `engines.node` | `"^24.22.1"` | Node.js version to install (default `24.22.3`) |
 | `package.json` | `scripts.start` | `"node server.js"` | Default `web` command |
 | Environment | `NODE_OVERRIDE_VERSION` | `24.22.1` | Install this exact version and skip `engines.node` |
 

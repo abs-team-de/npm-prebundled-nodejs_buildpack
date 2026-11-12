@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.2](https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack/compare/v1.0.1...v1.0.2) - 2026-11-12
+
+### Security
+
+- Default Node.js version is now 24.22.3, which includes the [November 2026 security releases](https://nodejs.org/en/blog/vulnerability/november-2026-security-releases). It applies only to apps without `engines.node`; apps with a range pick up the patched release on their next staging anyway
+
 ## [1.0.1](https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack/compare/v1.0.0...v1.0.1) - 2026-11-02
 
 ### Fixed
