@@ -29,7 +29,7 @@ teardown() {
 
 @test "resolve_node_version: empty string returns default" {
   run resolve_node_version ""
-  [ "$output" = "24.22.1" ]
+  [ "$output" = "24.22.3" ]
 }
 
 @test "resolve_node_version: major resolves to newest release of that major" {

@@ -59,7 +59,7 @@ find_bad_symlinks() {
 }
 
 # ── Version defaults ──
-NODE_DEFAULT_VERSION="24.22.1"
+NODE_DEFAULT_VERSION="24.22.3"
 NODE_INDEX_URL="${NODE_INDEX_URL:-https://nodejs.org/dist/index.json}"
 
 # ── Resolve an engines.node constraint to a downloadable version ──
