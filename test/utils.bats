@@ -27,9 +27,22 @@ teardown() {
   [ "$output" = "20.18.0" ]
 }
 
-@test "resolve_node_version: empty string returns default" {
+@test "resolve_node_version: empty string resolves the default range to the newest release" {
   run resolve_node_version ""
-  [ "$output" = "24.22.3" ]
+  [ "$status" -eq 0 ]
+  [ "$output" = "24.22.1" ]
+}
+
+@test "resolve_node_version: bare operator resolves the default range" {
+  run resolve_node_version ">="
+  [ "$status" -eq 0 ]
+  [ "$output" = "24.22.1" ]
+}
+
+@test "resolve_node_version: empty string fails when the index is unreachable" {
+  NODE_INDEX_URL="file:///nonexistent"
+  run resolve_node_version ""
+  [ "$status" -eq 1 ]
 }
 
 @test "resolve_node_version: major resolves to newest release of that major" {

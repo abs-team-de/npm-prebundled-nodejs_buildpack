@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- An app without `engines.node` now gets the newest Node.js 24 release at staging (default range `24.x`) instead of a fixed version, so a Node.js security release needs a restage, not a buildpack release. Staging such an app now needs nodejs.org, as a range already did
+
+### Added
+
+- Moving major tag `v1`: every release moves it to the new version. Reference `#v1` in `mta.yaml` to get buildpack fixes without a commit per app
+
 ## [1.0.2](https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack/compare/v1.0.1...v1.0.2) - 2026-11-12
 
 ### Security
