@@ -44,11 +44,15 @@ jobs:
                      --json tagName --jq '.[].tagName' \
                    | { grep -E "^${major}\.[0-9]+\.[0-9]+$" || true; } \
                    | sort -V | tail -n 1)
-          if [ "$newest" != "$TAG" ]; then
-            echo "::notice::$TAG is not the newest stable ${major} release (${newest:-none}); $major stays where it is"
-            exit 0
+          if [ -z "$newest" ]; then
+            echo "::error::No published stable ${major} release found"
+            exit 1
           fi
 
-          git tag --force "$major" "${TAG}^{commit}"
+          # Move to the newest release, not to $TAG: the concurrency group keeps
+          # only one queued run and cancels older queued ones, so the run for
+          # the newest release may never start. Its tag may postdate checkout.
+          git fetch --force origin "refs/tags/${newest}:refs/tags/${newest}"
+          git tag --force "$major" "${newest}^{commit}"
           git push --force origin "refs/tags/${major}"
-          echo "::notice::$major now points at $TAG"
+          echo "::notice::$major now points at $newest (triggered by $TAG)"
