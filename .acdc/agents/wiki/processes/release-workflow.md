@@ -11,7 +11,7 @@ sources:
   - .github/workflows/major-tag.yml
   - lib/utils.sh
   - "release of v1.0.1 (staging in cflinuxfs5)"
-updated: 2026-11-17
+updated: 2026-11-18
 confidence: medium
 ---
 
@@ -35,7 +35,11 @@ SAP BTP consumes this buildpack by git URL plus tag (`...npm-prebundled-nodejs_b
 4. **Tag and publish.**
    - Create an annotated tag `vX.Y.Z` on the master commit and push it.
    - Create the GitHub Release with that version's CHANGELOG section as notes: `gh release create vX.Y.Z --notes-file <section file> --verify-tag`.
-   - Publishing a non-prerelease release triggers `.github/workflows/major-tag.yml`, which force-moves `v1` to that release, but only if it is the newest stable `v1.x.y` release: the tag never moves backwards, and runs are serialized so two close releases cannot race.
+   - Publishing a non-prerelease release triggers `.github/workflows/major-tag.yml`, which force-moves `v1` to the newest published stable `v1.x.y` release, whichever release triggered it: GitHub keeps only one pending run per concurrency group and cancels older pending ones, so the run for the newest release may never start.
+     - The trigger fires only for releases published with a user token (gh CLI as a person), not for releases a workflow creates with `GITHUB_TOKEN`.
+     - Accepted limit: a prerelease run can replace a queued stable run in the concurrency group (the prerelease check is a job-level `if`), so `v1` can stay one release behind until the next stable release.
+   - If a CHANGELOG section was merged but never tagged, fold it into the next release instead of tagging it late (1.0.2 was folded into Unreleased this way).
+   - Merging a PR that adds or changes a workflow file with gh needs the `workflow` token scope: `gh auth refresh -h github.com -s workflow`.
 5. **Confirm reachability.** BTP fetches the buildpack anonymously, so the repository must stay public. Check: `git ls-remote https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack.git refs/tags/vX.Y.Z`. Then check the moved major tag: `git ls-remote https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack.git refs/tags/v1` must point at the new release commit (wait for the Move major tag workflow run).
 
 ## Links
