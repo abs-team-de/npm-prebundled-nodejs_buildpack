@@ -31,10 +31,12 @@ modules:
         - npm ci --omit=dev
     parameters:
       buildpacks:
-        - https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack.git#v1.0.2
+        - https://github.com/abs-team-de/npm-prebundled-nodejs_buildpack.git#v1
       memory: 512M
       disk_quota: 1024M
 ```
+
+`#v1` follows the newest 1.x release, so buildpack fixes reach your app on its next deploy or restage. An exact tag (`#v1.1.0`) pins only the buildpack: for a reproducible staging, also set an exact version in `engines.node`, since the default and any range resolve to the newest matching Node.js release at staging.
 
 `mbt build` runs `npm ci --omit=dev` in `srv/`, and the MTAR then contains `srv/node_modules`. On SAP BTP customers can't run `cf create-buildpack`, which is why the buildpack is referenced by git URL.
 
@@ -64,7 +66,7 @@ Finalize therefore fails staging on any symlink in `node_modules` that is dangli
 
 | Source | Field | Example | Purpose |
 |--------|-------|---------|---------|
-| `package.json` | `engines.node` | `"^24.22.1"` | Node.js version to install (default `24.22.3`) |
+| `package.json` | `engines.node` | `"^24.22.1"` | Node.js version to install (default: newest `24.x` release) |
 | `package.json` | `scripts.start` | `"node server.js"` | Default `web` command |
 | Environment | `NODE_OVERRIDE_VERSION` | `24.22.1` | Install this exact version and skip `engines.node` |
 

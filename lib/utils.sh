@@ -59,7 +59,9 @@ find_bad_symlinks() {
 }
 
 # ── Version defaults ──
-NODE_DEFAULT_VERSION="24.22.3"
+# An app without engines.node gets the newest release of this major, so a
+# Node.js security release needs a restage, not a buildpack release.
+NODE_DEFAULT_RANGE="24.x"
 NODE_INDEX_URL="${NODE_INDEX_URL:-https://nodejs.org/dist/index.json}"
 
 # ── Resolve an engines.node constraint to a downloadable version ──
@@ -76,11 +78,16 @@ NODE_INDEX_URL="${NODE_INDEX_URL:-https://nodejs.org/dist/index.json}"
 # NOT supported (error on stderr, returns 1):
 #   ranges:   ">=18 <21", "18 || 20", "18 - 20"
 #   star:     "*"
+#
+# The optional second argument names what is resolved in the nodejs.org
+# lookup errors; constraint validation errors always quote engines.node.
 resolve_node_version() {
   local requested="$1"
+  local subject="${2:-engines.node '${requested}'}"
 
   if [ -z "$requested" ]; then
-    echo "$NODE_DEFAULT_VERSION"
+    resolve_node_version "$NODE_DEFAULT_RANGE" \
+      "the default Node.js range '${NODE_DEFAULT_RANGE}' (package.json sets no engines.node version)"
     return
   fi
 
@@ -96,7 +103,8 @@ resolve_node_version() {
   cleaned=$(echo "$requested" | sed 's/^[>=^~]*//' | sed 's/\.x//g')
 
   if [ -z "$cleaned" ]; then
-    echo "$NODE_DEFAULT_VERSION"
+    resolve_node_version "$NODE_DEFAULT_RANGE" \
+      "the default Node.js range '${NODE_DEFAULT_RANGE}' (engines.node '${requested}' names no version)"
     return
   fi
 
@@ -120,17 +128,17 @@ resolve_node_version() {
     return
   fi
 
-  latest_node_version "$requested" "$operator" "$cleaned" "$parts"
+  latest_node_version "$subject" "$operator" "$cleaned" "$parts"
 }
 
 # ── Newest nodejs.org linux-x64 release matching operator + version ──
-# Usage: latest_node_version <requested> <operator> <version> <parts>
+# Usage: latest_node_version <subject> <operator> <version> <parts>
 latest_node_version() {
-  local requested="$1" operator="$2" version="$3" parts="$4"
+  local subject="$1" operator="$2" version="$3" parts="$4"
   local index lower resolved
 
   if ! index=$(curl -sfL "$NODE_INDEX_URL"); then
-    log_error "Could not fetch ${NODE_INDEX_URL} to resolve engines.node '${requested}'." >&2
+    log_error "Could not fetch ${NODE_INDEX_URL} to resolve ${subject}." >&2
     return 1
   fi
 
@@ -138,7 +146,7 @@ latest_node_version() {
   lower=$(echo "${version}.0.0" | cut -d. -f1-3 | jq -R 'split(".") | map(tonumber)')
 
   if ! echo "$index" | jq empty; then
-    log_error "Could not parse ${NODE_INDEX_URL} to resolve engines.node '${requested}'." >&2
+    log_error "Could not parse ${NODE_INDEX_URL} to resolve ${subject}." >&2
     return 1
   fi
 
@@ -162,12 +170,12 @@ latest_node_version() {
           elif $op == "~" and $parts >= 2 then .v[0:2] == $low[0:2]
           else .v[0:$parts] == $low[0:$parts] end)
     ] | (max_by(.v) // empty) | .v | map(tostring) | join(".")'); then
-    log_error "Unexpected format in ${NODE_INDEX_URL} (expected a list of releases) to resolve engines.node '${requested}'." >&2
+    log_error "Unexpected format in ${NODE_INDEX_URL} (expected a list of releases) to resolve ${subject}." >&2
     return 1
   fi
 
   if [ -z "$resolved" ]; then
-    log_error "No Node.js release on nodejs.org matches engines.node '${requested}'." >&2
+    log_error "No Node.js release on nodejs.org matches ${subject}." >&2
     return 1
   fi
   echo "$resolved"
